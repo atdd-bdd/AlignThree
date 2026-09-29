@@ -183,6 +183,13 @@ target_compile_definitions(AlignThree PRIVATE
     SPECSTUDIO_VERSION="${PROJECT_VERSION}"
 )
 
+# Without this, CMake fills CFBundleShortVersionString (what Finder's Get Info
+# shows) with just major.minor, so 0.9.1 appeared as 0.9.
+set_target_properties(AlignThree PROPERTIES
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+)
+
 # AlignThree finds SpecTableConverter and AlignThreeAskPass via
 # applicationDirPath() (see src/ToolPath.h), which on macOS resolves to
 # AlignThree.app/Contents/MacOS. TARGET_FILE_DIR:AlignThree is that same
