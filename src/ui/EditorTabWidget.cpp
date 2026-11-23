@@ -4,6 +4,7 @@
 
 #include <QLabel>
 #include <QMessageBox>
+#include <QDir>
 #include <QFileInfo>
 
 EditorTabWidget::EditorTabWidget(QWidget* parent)
@@ -17,15 +18,33 @@ EditorTabWidget::EditorTabWidget(QWidget* parent)
     connect(this, &QTabWidget::currentChanged,    this, &EditorTabWidget::onCurrentChanged);
 }
 
+QString EditorTabWidget::pathKey(const QString& path)
+{
+    // Both slashes, '.' and '..', and a relative path all collapse here. The
+    // spellings that reach this class really do differ: a file just made by
+    // File > New File arrives as rootPath + QDir::separator() + name, with a
+    // backslash in it, while the Solution Explorer hands over what
+    // QDirIterator produced, which is all forward slashes.
+    const QString abs =
+        QDir::cleanPath(QFileInfo(QDir::fromNativeSeparators(path)).absoluteFilePath());
+#ifdef Q_OS_WIN
+    // Case names no file of its own on Windows.
+    return abs.toLower();
+#else
+    return abs;
+#endif
+}
+
 void EditorTabWidget::openFile(const QString& absolutePath, Project* /*project*/)
 {
-    if (m_openFiles.contains(absolutePath)) {
-        setCurrentWidget(m_openFiles[absolutePath]);
+    const QString key = pathKey(absolutePath);
+    if (m_openFiles.contains(key)) {
+        setCurrentWidget(m_openFiles[key]);
         return;
     }
 
     auto* editor = EditorFactory::create(absolutePath, nullptr, this);
-    m_openFiles[absolutePath] = editor;
+    m_openFiles[key] = editor;
 
     QString title = QFileInfo(absolutePath).fileName();
     int idx = addTab(editor, title);
@@ -52,7 +71,7 @@ BaseEditor* EditorTabWidget::currentEditor() const
 
 BaseEditor* EditorTabWidget::editorForPath(const QString& absolutePath) const
 {
-    return m_openFiles.value(absolutePath, nullptr);
+    return m_openFiles.value(pathKey(absolutePath), nullptr);
 }
 
 bool EditorTabWidget::saveCurrentFile()
@@ -72,7 +91,7 @@ bool EditorTabWidget::saveAllFiles()
 
 void EditorTabWidget::closeFile(const QString& absolutePath)
 {
-    auto* ed = m_openFiles.value(absolutePath, nullptr);
+    auto* ed = m_openFiles.value(pathKey(absolutePath), nullptr);
     if (!ed) return;
     closeTab(indexOf(ed));
 }
@@ -91,7 +110,15 @@ bool EditorTabWidget::closeTab(int index)
         if (btn == QMessageBox::Save)   ed->save();
     }
 
-    m_openFiles.remove(ed->filePath());
+    // By key, and by value as well: an editor whose path changed while it was
+    // open (a rename) would otherwise leave a dangling pointer in the map for
+    // the next openFile() to switch to.
+    m_openFiles.remove(pathKey(ed->filePath()));
+    for (auto it = m_openFiles.begin(); it != m_openFiles.end(); ) {
+        if (it.value() == ed) it = m_openFiles.erase(it);
+        else                  ++it;
+    }
+
     removeTab(index);
     ed->deleteLater();
     return true;

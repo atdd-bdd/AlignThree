@@ -32,5 +32,12 @@ private slots:
 private:
     bool closeTab(int index);
 
+    // One spelling of a path, for the map below. Windows names the same file
+    // several ways -- either slash, any case -- and the callers build their
+    // paths differently, so a map keyed on whatever string arrived misses a
+    // tab that is already open and puts up a second one on the same file.
+    static QString pathKey(const QString& path);
+
+    // Keyed by pathKey(), not by the caller's spelling.
     QMap<QString, BaseEditor*> m_openFiles;
 };

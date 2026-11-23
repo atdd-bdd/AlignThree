@@ -390,7 +390,9 @@ void AppController::onNewFile(const QString& projectRootHint)
     if (dlg.exec() != QDialog::Accepted) return;
 
     QString fileName = dlg.fileName();
-    QString filePath = proj->rootPath() + QDir::separator() + fileName;
+    // QDir::filePath, not QDir::separator: this path is handed to onOpenFile,
+    // and a tab is found again by the path it was opened under.
+    QString filePath = QDir(proj->rootPath()).filePath(fileName);
 
     if (QFile::exists(filePath)) {
         QMessageBox::warning(m_mainWindow, tr("File Exists"),
@@ -2363,7 +2365,7 @@ void AppController::onPasteFile(const QString& targetProjectRoot)
         tr("New file name:"), QLineEdit::Normal, srcInfo.fileName(), &ok);
     if (!ok || newName.trimmed().isEmpty()) return;
 
-    const QString destPath = targetProjectRoot + QDir::separator() + newName.trimmed();
+    const QString destPath = QDir(targetProjectRoot).filePath(newName.trimmed());
     if (QFile::exists(destPath)) {
         QMessageBox::warning(m_mainWindow, tr("Paste Failed"),
             tr("'%1' already exists.").arg(newName.trimmed()));
