@@ -9,7 +9,6 @@
 #include <QFileSystemWatcher>
 #include <QMenu>
 #include <QMessageBox>
-#include <QTimer>
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
 #include <QTextBlock>
@@ -72,15 +71,34 @@ void PlainTextEditor::load(const QString& path)
     setDirty(false);
 }
 
+bool PlainTextEditor::diskMatchesDocument(const QString& path) const
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    // Through QIODevice::Text, as load() reads and save() writes, so the line
+    // endings on disk are translated the same way on both sides.
+    QTextStream in(&file);
+    return in.readAll() == m_edit->toPlainText();
+}
+
 void PlainTextEditor::onFileChangedOnDisk(const QString& path)
 {
     // Re-add the path — some editors replace the file on save (Qt removes it from watcher)
     if (QFile::exists(path) && !m_watcher->files().contains(path))
         m_watcher->addPath(path);
 
-    // Ignore notifications triggered by our own save()
-    if (m_savingNow) {
-        m_savingNow = false;
+    // Our own save, or anything else that left the file holding what is already
+    // on screen: nothing to reload, so say nothing.
+    //
+    // This replaces a flag that save() set and the first notification cleared,
+    // with a 500 ms timer behind it in case none ever came. That guessed which
+    // notification was ours from its timing; this asks the only question the
+    // prompt is about, so it holds for a second notification, a late one, and a
+    // rewrite by another program that happened to produce the same bytes.
+    if (diskMatchesDocument(path)) {
+        m_ignoreNextChange = false;
         return;
     }
 
@@ -107,14 +125,10 @@ bool PlainTextEditor::save()
 {
     const QString path = filePath();
 
-    // Flag our own write so onFileChangedOnDisk ignores it.
-    // Use a timer to clear it after 500 ms in case fileChanged never fires.
-    m_savingNow = true;
-    QTimer::singleShot(500, this, [this]{ m_savingNow = false; });
-
+    // No flag for our own write: onFileChangedOnDisk compares the file with the
+    // document instead, whatever the watcher reports and whenever it does.
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        m_savingNow = false;
         QMessageBox::critical(this, tr("Save Failed"),
             tr("Cannot write '%1': %2").arg(path, file.errorString()));
         return false;

@@ -63,6 +63,11 @@ private slots:
 private:
     bool isInTableContext()  const;
     bool isInStringContext() const;
+
+    // True when the file holds exactly what this editor holds. Asked on every
+    // notification from the watcher: if the answer is yes there is nothing to
+    // reload and nothing to ask about, whoever did the writing.
+    bool diskMatchesDocument(const QString& path) const;
     void showEditorContextMenu(const QPoint& globalPos);
 
     LineNumberEdit*     m_edit             = nullptr;
@@ -70,5 +75,4 @@ private:
     QFileSystemWatcher* m_watcher         = nullptr;
     bool                m_ignoreNextChange = false;
     bool                m_autoReload       = false;
-    bool                m_savingNow        = false;
 };
