@@ -121,6 +121,20 @@ AppController::~AppController()
 
 void AppController::setSolution(Solution* solution)
 {
+    // Whatever was open belonged to the solution being replaced, and its files
+    // are about to be absent from the Solution Explorer. Ask rather than
+    // assume: someone who opened a second solution to compare it with the
+    // first wants those tabs kept. Every way in passes through here -- Open
+    // Solution, Open Project Folder, Clone, New Solution, New Project -- and
+    // with nothing open there is nothing to ask about.
+    if (solution && !m_mainWindow->allOpenEditors().isEmpty()) {
+        const auto answer = QMessageBox::question(m_mainWindow, tr("Open Project"),
+            tr("Do you want to remove existing tabs?"),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (answer == QMessageBox::Yes)
+            m_mainWindow->closeAllEditorTabs();
+    }
+
     delete m_solution;
     m_solution = solution;
     m_treeModel->setSolution(solution);

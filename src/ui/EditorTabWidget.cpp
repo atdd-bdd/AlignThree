@@ -96,6 +96,15 @@ void EditorTabWidget::closeFile(const QString& absolutePath)
     closeTab(indexOf(ed));
 }
 
+bool EditorTabWidget::closeAllTabs()
+{
+    // Backwards: closeTab() removes the tab at the index it is given, so
+    // counting up would step over every other one.
+    for (int i = count() - 1; i >= 0; --i)
+        if (!closeTab(i)) return false;
+    return true;
+}
+
 bool EditorTabWidget::closeTab(int index)
 {
     auto* ed = qobject_cast<BaseEditor*>(widget(index));

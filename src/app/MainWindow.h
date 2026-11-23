@@ -38,6 +38,10 @@ public:
     BaseEditor*         editorForPath(const QString& path) const;
     QList<BaseEditor*>  allOpenEditors()    const;
 
+    // Both editor groups, the split pane included. False if the user cancelled
+    // at a file with unsaved changes, which is left open.
+    bool                closeAllEditorTabs();
+
     void splitEditorRight();
     void closeSplit();
 

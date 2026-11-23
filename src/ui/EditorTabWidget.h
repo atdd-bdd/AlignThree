@@ -21,6 +21,10 @@ public:
     bool saveAllFiles();
     void closeFile(const QString& absolutePath);
 
+    // Closes every tab, asking about each one that has unsaved changes.
+    // False if the user cancelled at one of those: that file is still open.
+    bool closeAllTabs();
+
 signals:
     void currentFileChanged(const QString& absolutePath);
     void fileOpenRequested(const QString& absolutePath);

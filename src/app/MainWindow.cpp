@@ -94,6 +94,14 @@ QList<BaseEditor*> MainWindow::allOpenEditors() const
     return result;
 }
 
+bool MainWindow::closeAllEditorTabs()
+{
+    bool all = m_editorTabs->closeAllTabs();
+    if (m_editorTabs2 && !m_editorTabs2->closeAllTabs())
+        all = false;
+    return all;
+}
+
 void MainWindow::splitEditorRight()
 {
     if (!m_editorTabs2) {
