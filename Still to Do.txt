@@ -36,12 +36,17 @@ each checked by unpacking or by reading its signature rather than from a log:
   whole of the difference. Identity is unchanged from 0.9.3
   (KenPughInc.AlignThree), so the self-hosted package upgrades in place.
 
-  **scripts\verify_install.ps1 has NOT been run against 0.9.4.** It passed
-  every check for 0.9.3 on 2026-11-12, and nothing in the installer or the .iss
-  changed between them, but the three facts a store submission asks to be
-  verified by hand -- silent install, the Add or Remove Programs entry, no
-  bundleware -- are evidenced for 0.9.3 and not for this build. It installs on
-  this machine, which is why it was left for Ken to run.
+  scripts\verify_install.ps1 -PerUser passes every check against 0.9.4, run on
+  2026-11-23, so the three facts a store submission asks to be verified by hand
+  -- silent install, the Add or Remove Programs entry, no bundleware -- are
+  evidenced for this build: exit 0 in 7s with no restart, an HKCU entry reading
+  AlignThree / Ken Pugh, Inc. / 0.9.4, 41 files and nothing bundled, all four
+  executables signed and timestamped on one certificate (unins000.exe
+  included), the converter running with Qt off PATH, and a clean removal.
+
+  The 0.9.3 install on this machine was not disturbed. A per-user run registers
+  in HKCU while that one is in HKLM, so the clash guard reported "already
+  installed elsewhere, and left alone" and -Force was not needed.
 
 The version bumped to 0.9.4 in CMakeLists.txt (f69ab8b) because a rebuild under
 the old number would carry the same identity and the same 0.9.3.0 version with
