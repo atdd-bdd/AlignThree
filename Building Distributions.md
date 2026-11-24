@@ -396,6 +396,15 @@ the certificate CN: `Ken Pugh, Inc.`
 
 ### MSIX, for the Store and for self-hosting
 
+> **Ken's ruling, 2026-11-24: releases no longer carry an MSIX.** The Microsoft
+> Store replaces it — a visitor who wants the packaged app installs it from
+> there, and the installer is what the site offers to anyone who wants
+> `SpecTableConverter.exe` on a command line. So the **Store** package below is
+> still built and uploaded at each release; the **self-hosted** one is not
+> attached to a GitHub release any more. The script still produces it, and this
+> section documents it, because nothing has been removed and a self-hosted
+> package may be wanted again.
+
 `scripts\package_msix.ps1` packs the same staged folder the zip and the
 installer come from, so all three ship identical binaries. It produces two
 different packages, and which one you want decides every identity value in it.

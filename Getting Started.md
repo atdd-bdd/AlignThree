@@ -11,23 +11,35 @@ changes what you write.
 
 ---
 
-## 0. Installing: unblock the download first
+## 0. Installing: the Store, or the installer
 
-If you downloaded the **zip**, unblock it *before* you extract it:
+The simplest way is the **Microsoft Store**:
 
-> Right-click `AlignThree-<version>-windows-x64.zip` → **Properties** → tick
-> **Unblock** at the bottom → **OK**. Then extract.
+> <https://apps.microsoft.com/detail/9npv57vxhqw6>
 
-Windows tags every file you download from the internet, and the tag is copied to
-everything extracted from a zip. Miss this and the first run of `AlignThree.exe`
-brings up a security warning; unblocking afterwards means doing it file by file.
+Nothing to unblock, no security warning to click through, and updates arrive on
+their own. If you are going to work in the IDE, stop here — this is the one to
+take.
 
-The **installer** needs no unblocking. It will ask for administrator permission,
-which is normal — it installs into `Program Files`.
+**If you want to run Build and Analyze from the command line, take the
+installer instead.** Download `AlignThree-<version>-setup.exe` from
+<https://alignthree.com/>. It puts `SpecTableConverter.exe` into
+`C:\Program Files\AlignThree`, where a script, a build server or a terminal can
+call it. The Store copy contains the same converter, but a Store app is
+installed under `C:\Program Files\WindowsApps`, which is locked down, and it
+publishes no command-line name for anything but the IDE itself — so there is
+nothing there for a script to run.
 
-Either way you may see a **"Windows protected your PC"** panel from SmartScreen.
-AlignThree is signed by *Ken Pugh, Inc.*, and clicking **More info** shows that
-publisher; **Run anyway** then proceeds. SmartScreen shows this until enough
+Both can be installed at once if you want the IDE from the Store and the
+converter for a build. They are separate installations to Windows and do not
+disturb each other.
+
+The installer needs no unblocking. It asks for administrator permission, which
+is normal — it installs into `Program Files`.
+
+With the installer you may see a **"Windows protected your PC"** panel from
+SmartScreen. AlignThree is signed by *Ken Pugh, Inc.*, and clicking
+**More info** shows that publisher; **Run anyway** then proceeds. SmartScreen shows this until enough
 people have installed a given release, so it fades with each version rather than
 indicating anything is wrong. Check the publisher before you click through — on
 this or on anything else.

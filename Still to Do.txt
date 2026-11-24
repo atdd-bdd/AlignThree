@@ -25,16 +25,27 @@ solution is opened, and the last block of a file that does not end in a newline
 Built and signed for **0.9.4** on 2026-11-23, all four from one signed stage,
 each checked by unpacking or by reading its signature rather than from a log:
 
-  - dist\AlignThree-0.9.4-x64.msix          signed, identity and version read
-                                            back from the unpacked manifest
-  - dist\AlignThree-0.9.4-x64-store.msix    unsigned, for Partner Center
   - dist\AlignThree-0.9.4-setup.exe         signed, uninstaller stub included
   - dist\AlignThree-0.9.4-windows-x64.zip   signed binaries inside
+  - dist\AlignThree-0.9.4-x64-store.msix    unsigned, for Partner Center
+  - dist\AlignThree-0.9.4-x64.msix          signed, identity and version read
+                                            back from the unpacked manifest;
+                                            **built but not released** -- see
+                                            the ruling below
+
+  Ken's ruling, 2026-11-24: **releases no longer carry an MSIX.** The Microsoft
+  Store replaces the self-hosted package -- whoever wants the packaged app
+  installs it from the Store, and the installer is what the site offers to
+  anyone who wants SpecTableConverter.exe on a command line. The Store package
+  is still built and uploaded at each release. The self-hosted one stays in
+  dist\ and stays documented, because the script still makes it and it may be
+  wanted again.
 
   The two MSIX packages hold the same 68 payload files; the signed one carries
   AppxSignature.p7x and AppxMetadata\CodeIntegrity.cat as well, which is the
   whole of the difference. Identity is unchanged from 0.9.3
-  (KenPughInc.AlignThree), so the self-hosted package upgrades in place.
+  (KenPughInc.AlignThree), so the self-hosted package would upgrade 0.9.3 in
+  place for anyone who installed that one.
 
   scripts\verify_install.ps1 -PerUser passes every check against 0.9.4, run on
   2026-11-23, so the three facts a store submission asks to be verified by hand
@@ -75,8 +86,12 @@ Still open in the pass:
   - Both release tags are pushed: v0.9.3 at 2f1d845 and v0.9.4 at 95d144d,
     annotated, neither force-updated. Each push started the release workflow,
     which builds **Linux and macOS only** -- the signing token is physical
-    hardware no runner can reach -- so the four Windows artefacts are attached
-    to the draft release by hand. That is still to do for 0.9.4.
+    hardware no runner can reach -- so the Windows artefacts are attached by
+    hand. Done for v0.9.4: the release is published, carrying the setup, the
+    portable zip and the workflow's AlignThree-0.9.4-macos-arm64.dmg. No MSIX,
+    by the ruling above. The .dmg was fetched into dist\ on 2026-11-24, its
+    SHA-256 checked against the digest GitHub publishes, and the website now
+    offers it beside the installer.
     (An earlier version of this line said v0.9.3 was local only and pointed at
     1d56bbb. It was moved to HEAD and pushed on 2026-11-23; the sentence was
     carried forward without being checked.)
@@ -110,9 +125,16 @@ the header of scripts\package_windows.ps1.
     See "Building Distributions.md", "MSIX, for the Store and for
     self-hosting".
 
-[ ] alignthree.com rebuild and FTP deploy, once the 0.9.4 artefacts are final.
-    build.py copies the newest installer out of dist/ into public/ (unlinked),
-    so the site picks up whatever is there when it is run.
+[ ] alignthree.com rebuild and FTP deploy. Everything below is built into
+    public\ and waiting there; nothing is live until the upload.
+    build.py copies the newest installer AND the newest macOS .dmg out of
+    dist\ into public\, so the site picks up whatever is there when it is run.
+    Each download has its own marker block in the template and disappears on
+    its own if dist\ has no artefact for it; all four combinations were tested.
+    Already in public\, not yet uploaded: Ken's pipeline diagram in a new
+    "How it works" section, the Microsoft Store link, the macOS download, the
+    hero with its two notes removed, and Getting Started's rewritten
+    installing section.
 
 
 ## Open defects
