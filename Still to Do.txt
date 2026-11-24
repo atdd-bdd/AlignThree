@@ -243,6 +243,15 @@ built-in type colouring. What is left is one decision and one known wart.
 [ ] Richer error recovery in Share Changes.
 [ ] The GherkinExecutor migration exercise: build a project out of its feature
     files and try it.
+[ ] A Windows VERSIONINFO resource on the three executables -- Ken's ruling,
+    2026-11-23: in the version after 0.9.4. There is no .rc file in the tree,
+    so Explorer's Details tab and (Get-Item x).VersionInfo.FileVersion are
+    blank for AlignThree.exe, AlignThreeAskPass.exe and SpecTableConverter.exe.
+    The version the application itself reports is not affected and never was:
+    SPECSTUDIO_VERSION comes from project() in the top-level CMakeLists and
+    reaches the About box and applicationVersion. This is a .rc generated from
+    PROJECT_VERSION plus one line per target in src\CMakeLists.txt. Note that
+    FILEVERSION wants four numbers, as the MSIX manifest does.
 
 
 ## Not software
