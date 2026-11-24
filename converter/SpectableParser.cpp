@@ -342,6 +342,25 @@ SpectableFile SpectableParser::parseLines(const QString& text, const QString& fi
 
     QStringList lines = text.split('\n');
 
+    // A file that does not end in a newline still ends its last block.
+    //
+    // Four things are closed when a blank line arrives -- a step table, a
+    // Collection's data row, a skipped table, and an Examples: table, which is
+    // where it also marks the named block as having examples. Text ending in
+    // '\n' splits into a trailing empty element and so supplies that blank line
+    // at the end of every ordinary file. Text that does not ends with its last
+    // row instead, and the block was left open: the rows had been read, but
+    // nothing said the block was finished, and every generator asks that
+    // question before writing a test. A BusinessRule whose Examples: table was
+    // the last line of the file generated nothing at all, silently.
+    //
+    // Supplying the line the author did not type is the same as their having
+    // typed it. It changes no line number, since it goes after the last one,
+    // and the two diagnostics a blank line can produce name the line their
+    // subject was written on rather than the blank itself.
+    if (!lines.isEmpty() && !lines.last().trimmed().isEmpty())
+        lines.append(QString());
+
     enum class State {
         Top,
         InAttrDef,         // reading the field-definition pipe table
