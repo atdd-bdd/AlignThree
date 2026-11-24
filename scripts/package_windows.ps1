@@ -23,6 +23,11 @@
 #   .\scripts\package_windows.ps1 -QtDir C:\Qt\6.10.0\msvc2022_64 -BuildType Release
 #   .\scripts\package_windows.ps1 -SkipBuild        # package what is already built
 #   .\scripts\package_windows.ps1 -SkipSigning      # never touch the token
+#   .\scripts\package_windows.ps1 -Version 0.9.4    # name the artefacts this
+#
+# Without -Version the name comes from the newest reachable tag, which is the
+# last release -- so a tree bumped past that tag names its artefacts after the
+# version it is no longer building. Pass the same -Version to package_msix.ps1.
 #
 # ---- the uninstaller ---------------------------------------------------------
 #
@@ -61,6 +66,7 @@
 
 [CmdletBinding()]
 param(
+    [string] $Version,
     [string] $QtDir     = 'C:\Qt\6.10.0\msvc2022_64',
     [string] $BuildType = 'Release',
     [string] $CMake     = 'C:\Qt\Tools\CMake_64\bin\cmake.exe',
@@ -126,26 +132,43 @@ if (-not (Test-Path $CMake)) {
     $CMake = $c.Source
 }
 
-# Version for the artefact names: a release tag if the tree has one, otherwise
-# the project() version in CMakeLists.txt. Never a bare commit hash -- these
-# names end up in front of users.
+# Version for the artefact names: -Version if it was given, then a release tag
+# if the tree has one, otherwise the project() version in CMakeLists.txt. Never
+# a bare commit hash -- these names end up in front of users.
+#
+# -Version exists because the tag is the newest tag *reachable*, which is the
+# last release rather than the one being built. A tree whose CMakeLists.txt has
+# been bumped past its last tag could not name its own artefacts: a 0.9.4 build
+# was staged as AlignThree-0.9.3-windows-x64, with binaries inside reporting
+# 0.9.4. Pass -Version to say which it is, and package_msix.ps1 takes the same
+# argument so one release names itself the same way throughout.
+#
 # git exits non-zero and writes to stderr when the repository has no tags at
 # all, which is a perfectly ordinary state and must not stop packaging. 2>$null
 # is not enough under 'Stop' -- 5.1 still raises NativeCommandError.
-$version = $null
-$prev = $ErrorActionPreference
-$ErrorActionPreference = 'Continue'
-try   { $version = (& git -C $repo describe --tags --abbrev=0 2>&1 |
-                    Where-Object { $_ -is [string] } | Select-Object -First 1) }
-catch { $version = $null }
-finally { $ErrorActionPreference = $prev }
-if ($LASTEXITCODE -ne 0) { $version = $null }
+$version = $Version
+if (-not $version) {
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try   { $version = (& git -C $repo describe --tags --abbrev=0 2>&1 |
+                        Where-Object { $_ -is [string] } | Select-Object -First 1) }
+    catch { $version = $null }
+    finally { $ErrorActionPreference = $prev }
+    if ($LASTEXITCODE -ne 0) { $version = $null }
+}
 
 if (-not $version) {
     $m = Select-String -Path (Join-Path $repo 'CMakeLists.txt') -Pattern 'project\(AlignThree VERSION ([0-9.]+)'
     $version = if ($m) { $m.Matches[0].Groups[1].Value } else { '0.0.0' }
 }
 $version = "$version".Trim().TrimStart('v')
+
+# A version is part of a file name and of the installer's registry entries, so
+# it has to be the shape those expect. Caught here rather than at the Inno
+# compile, which reports it as a syntax error in a generated line.
+if ($version -notmatch '^[0-9]+(\.[0-9]+){1,3}$') {
+    throw "Version '$version' is not two to four dot-separated numbers."
+}
 Write-Host "AlignThree $version ($BuildType)" -ForegroundColor Cyan
 
 $buildDir = Join-Path $repo 'build'
