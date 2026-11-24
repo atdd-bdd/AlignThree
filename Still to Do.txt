@@ -72,11 +72,14 @@ Still open in the pass:
     artefacts survive, the signed binaries are inside the 0.9.3 zip, and
     dist\AlignThree-0.9.3-x64.msix.2026-11-12.bak is a copy of the package
     (SHA-256 a6157ed4f61eb41ef58c15e72dd598b6f6a76135cae0cd272ee9d15a0c1884dc).
-  - The v0.9.3 tag is **local only** and still points at 1d56bbb, which is now
-    several commits back. There is **no v0.9.4 tag at all**. A pushed v* tag
-    starts the release workflow, so it goes up deliberately or not at all --
-    and that workflow builds Linux and macOS only, so the four Windows
-    artefacts are attached to the draft by hand.
+  - Both release tags are pushed: v0.9.3 at 2f1d845 and v0.9.4 at 95d144d,
+    annotated, neither force-updated. Each push started the release workflow,
+    which builds **Linux and macOS only** -- the signing token is physical
+    hardware no runner can reach -- so the four Windows artefacts are attached
+    to the draft release by hand. That is still to do for 0.9.4.
+    (An earlier version of this line said v0.9.3 was local only and pointed at
+    1d56bbb. It was moved to HEAD and pushed on 2026-11-23; the sentence was
+    carried forward without being checked.)
   - What is installed on this machine is still the *unsigned* 0.9.3 setup of
     2026-11-11. The signed 0.9.4 one is in dist\.
   - The Store submission, and the alignthree.com rebuild and FTP deploy. If the
@@ -89,9 +92,11 @@ the header of scripts\package_windows.ps1.
 
 ## Waiting on someone else — no work to do
 
-[ ] Microsoft Store certification. The 0.9.2 MSIX was submitted on 2026-10-24
-    and went into certification; what it did after that is not known from here,
-    so read Partner Center before assuming either way. The 0.9.4 Store package
+[ ] Microsoft Store certification. The 0.9.2 MSIX was submitted on 2026-10-24,
+    and the listing is live: apps.microsoft.com/detail/9npv57vxhqw6, named
+    AlignThree, free, fetched 2026-11-23 and now linked from the home page.
+    Which build the Store is serving is not visible on that page and no version
+    is shown, so read Partner Center for that and for anything in flight. The 0.9.4 Store package
     is built and waiting in dist\, and uploading it while an earlier submission
     is still in flight may collide with it.
 
