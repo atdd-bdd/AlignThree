@@ -172,7 +172,7 @@ aqt install-qt linux desktop 6.10.0 gcc_64
 **Build**
 
 ```bash
-git clone https://github.com/atdd-bdd/SpecStudio && cd SpecStudio
+git clone https://github.com/atdd-bdd/AlignThree && cd AlignThree
 ./scripts/package_linux.sh --qt-dir ~/Qt/6.10.0/gcc_64
 ```
 

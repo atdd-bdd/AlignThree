@@ -23,7 +23,8 @@ $env:PATH += ";C:\Qt\6.10.0\msvc2022_64\bin"
 
 ## Project Overview
 
-AlignThree™ (formerly named SpecStudio; the repository keeps the old name) is a cross-platform IDE (Qt 6 / C++17 / CMake) for teams collaborating on specifications. The UI is modeled after Visual Studio. The original specification lives in `archive/To Do.txt`.
+AlignThree™ (formerly named SpecStudio; the GitHub repository was renamed to AlignThree on
+2026-11-24, the local folder is still `specstudio`) is a cross-platform IDE (Qt 6 / C++17 / CMake) for teams collaborating on specifications. The UI is modeled after Visual Studio. The original specification lives in `archive/To Do.txt`.
 
 ## Technology Stack
 

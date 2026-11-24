@@ -59,7 +59,7 @@ Lands at `/opt/homebrew/opt/qt@6`.
 ### Local dev build
 
 ```bash
-git clone https://github.com/atdd-bdd/SpecStudio && cd SpecStudio
+git clone https://github.com/atdd-bdd/AlignThree && cd AlignThree
 cmake -S . -B build -DQt6_DIR=/opt/homebrew/opt/qt@6/lib/cmake/Qt6
 cmake --build build --parallel
 open build/src/AlignThree.app
