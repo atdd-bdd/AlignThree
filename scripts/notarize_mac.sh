@@ -94,6 +94,32 @@ codesign "${SIGN_ARGS[@]}" "$APP"
 echo "Verifying..."
 codesign --verify --deep --strict --verbose=2 "$APP"
 
+# ---- rebuild the dmg around the signed app -----------------------------------
+# package_mac.sh made the .dmg from an ad-hoc-signed copy of the app. Signing
+# $APP afterwards changes nothing inside that image, so submitting it as-is gets
+# it rejected (and stapling then fails with "Record not found"). Rebuild it with
+# the signed app in place of the old copy, keeping everything else on it, then
+# sign the image itself.
+if [[ -n "$DMG" ]]; then
+    echo "Rebuilding $DMG around the signed app..."
+    WORK="$(mktemp -d)"
+    MNT="$WORK/mnt"; CONTENT="$WORK/content"
+    mkdir -p "$MNT" "$CONTENT"
+    hdiutil attach "$DMG" -readonly -nobrowse -mountpoint "$MNT" >/dev/null
+    VOLNAME="$(diskutil info "$MNT" | sed -n 's/^ *Volume Name: *//p')"
+    ditto "$MNT" "$CONTENT"
+    hdiutil detach "$MNT" >/dev/null
+    rm -rf "$CONTENT/$(basename "$APP")"
+    ditto "$APP" "$CONTENT/$(basename "$APP")"
+    rm -f "$DMG"
+    hdiutil create -volname "${VOLNAME:-AlignThree}" -srcfolder "$CONTENT" \
+                   -ov -format UDZO "$DMG" >/dev/null
+    rm -rf "$WORK"
+    echo "Signing the dmg..."
+    codesign --force --timestamp --sign "$IDENTITY" "$DMG"
+    codesign --verify --verbose=2 "$DMG"
+fi
+
 # ---- notarize ----------------------------------------------------------------
 # Apple must see the software before Gatekeeper will let it run on a machine
 # that did not build it. Submit the .dmg if there is one, otherwise a zip of the
@@ -106,7 +132,13 @@ if [[ -z "$SUBMIT" ]]; then
 fi
 
 echo "Submitting to Apple (this can take a few minutes)..."
-if ! xcrun notarytool submit "$SUBMIT" --keychain-profile "$PROFILE" --wait; then
+# notarytool exits 0 even when Apple rejects the upload ("status: Invalid"), so
+# the status line is what decides success, not the exit code.
+NOTARY_OUT="$(xcrun notarytool submit "$SUBMIT" --keychain-profile "$PROFILE" --wait 2>&1 || true)"
+echo "$NOTARY_OUT"
+if ! grep -q 'status: Accepted' <<<"$NOTARY_OUT"; then
+    SUB_ID="$(sed -n 's/^ *id: *//p' <<<"$NOTARY_OUT" | head -1)"
+    [[ -n "$SUB_ID" ]] && xcrun notarytool log "$SUB_ID" --keychain-profile "$PROFILE" >&2 || true
     echo "" >&2
     echo "Notarization failed. For the reason:" >&2
     echo "  xcrun notarytool history --keychain-profile $PROFILE" >&2
